@@ -1,0 +1,29 @@
+# --- CONFIDENTIAL: assessment material is Drive-only and must NEVER reach GitHub ---
+assessment/
+Assessment/
+*Answer to*
+*Answer Key*
+# The assessment BUILDERS embed the live questions, the case-study scenario and the
+# model answers verbatim — they are the paper in source form, so they are excluded too.
+.claude/skills/courseware-build/build/build_assessment.py
+.claude/skills/wsq-assessment/build_assessment.py
+.claude/skills/wsq-assessment/build_wsq_assessment.py
+
+# --- credentials ---
+.env
+.claude/.env
+.claude/lms_tms_api_key
+
+# --- OS / editor junk ---
+.DS_Store
+**/.DS_Store
+~$*
+*.tmp
+
+# --- python ---
+__pycache__/
+*.pyc
+.venv/
+
+# --- reference decks are large source material, kept out of the repo ---
+reference/
