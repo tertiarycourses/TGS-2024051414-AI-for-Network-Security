@@ -21,10 +21,12 @@ DOMAIN1 = [
               "configuration evidence for the weaknesses that matter — management ports exposed, unencrypted "
               "protocols in use, out-of-date service versions and default configurations left in place."),
         build="A network configuration inventory (host, IP, OS guess, open ports, service versions) plus a written list of the configuration weaknesses you found and why each one matters.",
-        services="Nmap, Zenmap, a spreadsheet, a generative AI assistant",
+        services="Nmap, Zenmap, the IP Calculator (alfredang.github.io/ipcalculator), a spreadsheet, a generative AI assistant",
         steps=[
             ("Confirm you are scanning only the lab network you have been authorised to scan. Never scan a network you do not own or have written permission to test.", ""),
-            ("Discover which hosts are alive on the lab subnet with a ping sweep. Note how many hosts answer.", "nmap -sn 192.168.56.0/24"),
+            ("Before you scan anything, work out exactly what 192.168.56.0/24 covers so your scan scope is defensible. Open the IP Calculator, enter the CIDR, and record the network address, the broadcast address, the usable host range and the host count.",
+             "https://alfredang.github.io/ipcalculator/"),
+            ("Discover which hosts are alive on the lab subnet with a ping sweep. Note how many hosts answer, and compare that against the usable host count you just calculated.", "nmap -sn 192.168.56.0/24"),
             ("Run a service and version scan against the live hosts to learn what each one is actually running.", "nmap -sV -O -T4 192.168.56.0/24 -oN inventory.txt"),
             ("Scan the full TCP port range on the one host that looks most interesting, so nothing above port 1024 is missed.", "nmap -sV -p- -T4 192.168.56.101 -oN host101-full.txt"),
             ("Export the scan to a machine-readable form so it can be loaded into a spreadsheet or a script.", "nmap -sV 192.168.56.0/24 -oX inventory.xml"),
@@ -58,11 +60,14 @@ DOMAIN1 = [
               "that contains a port scan and a data-staging burst. You see for yourself which events the model "
               "scores as anomalous and — just as importantly — which normal events it wrongly flags."),
         build="A labelled anomaly report: the connections your Isolation Forest model scored as anomalous, ranked by score, with your own verdict of true positive or false positive against the packet evidence.",
-        services="Wireshark, tshark, Python 3, pandas, scikit-learn, a generative AI assistant",
+        services="Wireshark, tshark, the PCAP Analyzer (alfredang.github.io/pcapanalyzer), Python 3, pandas, scikit-learn, a generative AI assistant",
         steps=[
             ("Start a Wireshark capture on the lab interface and leave it running while you browse and use the lab services normally for five minutes. This is your baseline period.", ""),
             ("While the capture runs, generate the anomalous period: run a port scan against a lab host and then copy a large file across the network.", "nmap -sS -p- 192.168.56.101"),
             ("Stop the capture and save it as traffic.pcapng.", ""),
+            ("Before writing any code, get a fast read on what you captured. Drag traffic.pcapng into the PCAP Analyzer (it runs entirely in your browser — nothing is uploaded) and note the packet count, capture duration, protocol distribution, top talkers and top conversations.",
+             "https://alfredang.github.io/pcapanalyzer/"),
+            ("Write down which conversation you EXPECT the model to flag as anomalous, based on the top-talkers view alone. You will check that prediction against the model's output in step 10 — a human hypothesis first is what stops you rationalising whatever the model happens to say.", ""),
             ("Export per-connection features from the capture with tshark — source, destination, port, packet count, byte count and duration.",
              "tshark -r traffic.pcapng -q -z conv,tcp > conversations.txt"),
             ("Export the same data as CSV for the model to read.",

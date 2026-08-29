@@ -81,12 +81,12 @@ carries its own guide.
 
 ## Repository Contents
 
-**Current version: v1.1 · 29 August 2026**
+**Current version: v1.2 · 29 August 2026**
 
 | File | What it is |
 |---|---|
-| `courseware/AI-for-Network-Security-v1.1.pptx` | Trainer slide deck — 151 slides |
-| `courseware/AI-for-Network-Security-v1.1.pdf` | Learner slides (PDF of the deck) |
+| `courseware/AI-for-Network-Security-v1.2.pptx` | Trainer slide deck — 155 slides |
+| `courseware/AI-for-Network-Security-v1.2.pdf` | Learner slides (PDF of the deck) |
 | `courseware/LP-AI-for-Network-Security.docx` / `.pdf` | Lesson Plan |
 | `courseware/LG-AI-for-Network-Security.docx` / `.pdf` | Learner Guide |
 | `LG-AI-for-Network-Security.md` | Learner Guide, Markdown mirror of the DOCX |
@@ -100,6 +100,25 @@ carries its own guide.
 
 `Nmap` · `Wireshark / tshark` · `Python 3` with `pandas` and `scikit-learn` ·
 a generative AI assistant (Claude, ChatGPT or Copilot) · a spreadsheet · a modern browser
+
+### Browser practice tools
+
+Free, no install, used directly in the lab procedures. The PCAP Analyzer processes your
+capture locally in the browser — nothing is uploaded.
+
+| Tool | Used in |
+|---|---|
+| [IP Calculator](https://alfredang.github.io/ipcalculator/) | Lab 1 — scan scope · Lab 7 — subnet the security zones |
+| [PCAP Analyzer](https://alfredang.github.io/pcapanalyzer/) | Lab 2 — capture triage · Lab 11 — capture evidence |
+| [Cybersecurity Simulator](https://alfredang.github.io/cybersecuritysimulator/) | Lab 5 — ground the likelihood scores |
+| [Cryptography Toolkit](https://alfredang.github.io/cryptography-toolkit/) | Lab 8 — confidentiality control · Lab 11 — hash tamper-evidence |
+| [RegexLab](https://alfredang.github.io/regexgenerator/) | Lab 10 — build and negatively test the log filters |
+
+Two further tools are optional extension work. They teach offensive penetration testing,
+which sits outside the abilities this course assesses, so they are not part of any lab and
+are not examined — run them to see what an attacker learns about a target:
+[Hacklab](https://alfredang.github.io/ethnicalhacking/) ·
+[FauxBank](https://pentest-fauxbank.vercel.app/)
 
 ## Reference Sources
 

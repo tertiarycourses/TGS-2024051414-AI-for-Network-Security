@@ -58,11 +58,15 @@ DOMAIN2 = [
               "pressure-test your likelihood estimates against current threat intelligence. You end with a heat map "
               "that shows management where the real exposure is."),
         build="A scored risk register with inherent risk, existing controls and residual risk for every entry, plus a 5x5 heat map showing the distribution.",
-        services="Lab 3 worklist, Lab 4 asset register, a spreadsheet, a generative AI assistant",
+        services="Lab 3 worklist, Lab 4 asset register, the Cybersecurity Simulator (alfredang.github.io/cybersecuritysimulator), a spreadsheet, a generative AI assistant",
         steps=[
             ("Create the risk register with the columns Risk ID, Asset, Threat, Vulnerability, Existing Controls, Likelihood (1-5), Impact (1-5), Inherent Risk, Treatment, Owner, Target Date, Residual Risk.", ""),
             ("Write each risk as a full sentence before you score it: 'A [threat actor] exploits [vulnerability] on [asset], resulting in [consequence].' A risk you cannot phrase this way is not yet a risk.", ""),
-            ("Score Likelihood 1-5 using evidence — is the vulnerability on the CISA KEV list, is the asset internet-facing, is there a public exploit, does an existing control reduce the chance?", ""),
+            ("Before you score likelihood from a spreadsheet, see the attacks work. Open the Cybersecurity Simulator and run the Phishing, SQL Injection and Social Engineering modules — note for each how little the attacker needs and how plausible the lure is. Likelihood is a judgement about human and technical reality, not a number you invent.",
+             "https://alfredang.github.io/cybersecuritysimulator/"),
+            ("Use the simulator's Password Strength Lab to test three passwords of the kind your organisation actually allows. Record the estimated crack time — that figure is the evidence behind any credential-attack likelihood score you write.",
+             "https://alfredang.github.io/cybersecuritysimulator/"),
+            ("Score Likelihood 1-5 using evidence — is the vulnerability on the CISA KEV list, is the asset internet-facing, is there a public exploit, does an existing control reduce the chance, and what did the simulator show you about how easily this attack lands?", ""),
             ("Score Impact 1-5 from the asset's criticality in Lab 4, adjusted for what this specific threat would actually do to it.", ""),
             ("Compute Inherent Risk as Likelihood x Impact, and band it: 1-4 Low, 5-9 Medium, 10-14 High, 15-25 Critical.", "Inherent Risk = Likelihood × Impact"),
             ("Record the controls already in place for each risk, then re-score to get Residual Risk. The gap between inherent and residual is exactly what your existing controls are buying you.", ""),

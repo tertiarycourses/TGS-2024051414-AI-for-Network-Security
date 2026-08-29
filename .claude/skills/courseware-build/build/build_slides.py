@@ -564,6 +564,11 @@ def steps_slide(act_title,steps,kicker,accent=TEAL,part=None,start=1):
             cb_y=int(y+Inches(0.05)+HEAD_H+Inches(0.04))
             cb_avail=int(y+rh-Inches(0.07)-cb_y)
             one=cmd.split("\n")[0]
+            # A browser URL is not a shell command — prefix it with a link glyph
+            # rather than a "$" prompt, which would tell the learner to type it
+            # into a terminal.
+            is_url=one.startswith(("http://","https://"))
+            prefix="\u2192  " if is_url else "$ "
             # The bar is sized from the command's WRAPPED height (not a fixed one
             # line), so a two-line command is never sliced by the bar edge. If the
             # wrapped bar cannot fit the card, shrink the type until it does.
@@ -571,16 +576,16 @@ def steps_slide(act_title,steps,kicker,accent=TEAL,part=None,start=1):
             csz=10.5 if len(one)<=96 else (9.5 if len(one)<=112 else 9.0)
             pad=Inches(0.10)
             while csz > 7.0:
-                need=int(_wrapped_h("$ "+one, bar_w, csz)*914400)+2*pad
+                need=int(_wrapped_h(prefix+one, bar_w, csz)*914400)+2*pad
                 if need <= cb_avail: break
                 csz-=0.5
             cb_h=min(cb_avail, max(Inches(0.28),
-                     int(_wrapped_h("$ "+one, bar_w, csz)*914400)+2*pad))
+                     int(_wrapped_h(prefix+one, bar_w, csz)*914400)+2*pad))
             cb_y=int(y+rh-Inches(0.07)-cb_h)      # bottom-align inside the card
             rect(s,Inches(1.62),cb_y,Inches(10.5),cb_h,RGBColor(0x0B,0x12,0x20))
             assert cb_y+cb_h <= y+rh, "code bar spills its card"
             txt(s,Inches(1.78),cb_y,Inches(10.2),cb_h,
-                [[("$ "+one,csz,RGBColor(0x9C,0xDC,0xFE),False)]],anchor=MSO_ANCHOR.MIDDLE)
+                [[(prefix+one,csz,RGBColor(0x9C,0xDC,0xFE),False)]],anchor=MSO_ANCHOR.MIDDLE)
         else:
             txt(s,Inches(1.62),y,Inches(10.6),rh,[[(text,UNIFORM,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
     footer(s); return s
@@ -1365,12 +1370,22 @@ for t in C.TOPICS:
                         kicker=f"LAB {a['num']} · PROCESS MAP", color=TEAL,
                         synthesis=("THE POINT", a["objective"]))
         allsteps=a["steps"]
+        # Balance the split instead of filling 5 and spilling the remainder: an
+        # 11-step lab must not end on a single-step slide with 70% empty space.
+        import math as _m
         CH=5
-        chunks=[allsteps[i:i+CH] for i in range(0,len(allsteps),CH)]
+        nchunk=max(1,_m.ceil(len(allsteps)/CH))
+        base,extra=divmod(len(allsteps),nchunk)
+        chunks=[];  _i=0
+        for _c in range(nchunk):
+            take=base+(1 if _c<extra else 0)
+            chunks.append(allsteps[_i:_i+take]); _i+=take
+        assert not any(len(c)<2 for c in chunks) or len(allsteps)<2, \
+            f"orphan step slide in a lab with {len(allsteps)} steps"
         for ci,ch in enumerate(chunks):
             steps_slide(a["title"], ch, kicker=f"LAB {a['num']} · PROCEDURE",
                         part=(f"Part {ci+1}/{len(chunks)}" if len(chunks)>1 else None),
-                        start=ci*CH+1)
+                        start=sum(len(x) for x in chunks[:ci])+1)
         tb=a.get("troubleshoot")
         tb_tiles=None
         if tb:

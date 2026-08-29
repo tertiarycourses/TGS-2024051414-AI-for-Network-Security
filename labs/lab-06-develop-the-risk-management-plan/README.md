@@ -25,9 +25,7 @@ A risk management plan: treatment decisions with named controls, owners, target 
 5. Add an owner, a target date and a success criterion to every treatment. The success criterion must be testable — 'no Telnet listener on any managed switch, verified by Nmap' is testable; 'switches hardened' is not.
 6. Map every planned control onto the NIST CSF 2.0 functions — Govern, Identify, Protect, Detect, Respond, Recover — and count the controls in each. The thin function is your real gap.
 
-   ```bash
-   https://www.nist.gov/cyberframework
-   ```
+   → <https://www.nist.gov/cyberframework>
 
 7. Fill the thinnest function with at least one concrete control. Most first-draft plans are heavy on Protect and empty on Recover.
 8. Set the monitoring cadence: which risks are reviewed monthly, which quarterly, and what event forces an out-of-cycle review.

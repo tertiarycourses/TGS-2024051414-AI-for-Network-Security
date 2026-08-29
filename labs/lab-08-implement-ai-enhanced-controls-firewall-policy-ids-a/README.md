@@ -14,7 +14,7 @@ This is where the design becomes configuration. You write a default-deny firewal
 
 A default-deny firewall ruleset derived from the access matrix, a tuned detection ruleset with its true/false positive counts, and an adaptive access-control policy specification.
 
-**Tools:** Firewall rule syntax (iptables or a NGFW policy table), Wireshark, Python, a generative AI assistant
+**Tools:** Firewall rule syntax (iptables or a NGFW policy table), the Cryptography Toolkit (alfredang.github.io/cryptography-toolkit), Wireshark, Python, a generative AI assistant
 
 ## Step-by-step
 
@@ -35,17 +35,21 @@ A default-deny firewall ruleset derived from the access matrix, a tuned detectio
 
 3. Add explicit deny-and-log rules for the traffic you most want to know about — management protocols crossing a zone boundary, and any outbound connection from the server zone.
 4. Review the ruleset for shadowed rules: any rule that can never match because an earlier rule already covers its traffic. Shadowed rules are the most common firewall defect there is.
-5. Now the detection layer. Write three detection rules against the Lab 2 capture — one for a port scan, one for a large outbound transfer, and one for a connection to a management port from a user subnet.
-6. Run each rule over the capture and count the true positives and false positives. A rule with more false positives than true is worse than no rule, because it trains the analyst to ignore alerts.
+5. Your ruleset controls WHO may connect; encryption controls what an interceptor can read. Use the Cryptography Toolkit to encrypt a sample management credential with AES-256 (CBC), then decrypt it. Then try the same string with DES and RC4 — both are flagged insecure for a reason. Record why your design mandates AES for management traffic.
+
+   → <https://alfredang.github.io/cryptography-toolkit/>
+
+6. Now the detection layer. Write three detection rules against the Lab 2 capture — one for a port scan, one for a large outbound transfer, and one for a connection to a management port from a user subnet.
+7. Run each rule over the capture and count the true positives and false positives. A rule with more false positives than true is worse than no rule, because it trains the analyst to ignore alerts.
 
    ```bash
    tshark -r traffic.pcapng -Y 'tcp.flags.syn==1 && tcp.flags.ack==0' -T fields -e ip.src | sort | uniq -c | sort -rn
    ```
 
-7. Compare the static rule against the Lab 2 anomaly model on the same traffic. Record where the rule wins (precision on known patterns) and where the model wins (unnamed behaviour).
-8. Specify the adaptive access-control policy: the signals (device posture, location, time, behaviour deviation, resource sensitivity), the risk bands, and the action at each band — allow, step-up MFA, restrict, or block.
-9. State the human-in-the-loop boundary explicitly. Which actions may the system take autonomously, and which require a named person to approve? Automatic blocking of a production server needs an owner.
-10. Ask your AI assistant to review the firewall ruleset for shadowed rules, overly broad allows and missing egress controls, then verify each finding by reading the rule yourself.
+8. Compare the static rule against the Lab 2 anomaly model on the same traffic. Record where the rule wins (precision on known patterns) and where the model wins (unnamed behaviour).
+9. Specify the adaptive access-control policy: the signals (device posture, location, time, behaviour deviation, resource sensitivity), the risk bands, and the action at each band — allow, step-up MFA, restrict, or block.
+10. State the human-in-the-loop boundary explicitly. Which actions may the system take autonomously, and which require a named person to approve? Automatic blocking of a production server needs an owner.
+11. Ask your AI assistant to review the firewall ruleset for shadowed rules, overly broad allows and missing egress controls, then verify each finding by reading the rule yourself.
 
    ```bash
    Prompt: 'Review this ordered firewall ruleset. Identify shadowed rules that can never match, allow rules that are broader than their stated business reason, and any missing egress control. Quote the rule number for each finding.'

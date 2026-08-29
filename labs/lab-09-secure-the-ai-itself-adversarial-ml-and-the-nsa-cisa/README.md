@@ -36,21 +36,15 @@ A demonstrated evasion and a demonstrated poisoning attack against your own mode
 5. Record the degradation as a number — detection rate before poisoning versus after. 'The model got worse' is an anecdote; a measured drop is evidence.
 6. Map both attacks onto the NIST AI 100-2e2025 taxonomy — evasion, poisoning, privacy and misuse — and state which class each belongs to and at what stage of the ML lifecycle it lands.
 
-   ```bash
-   https://csrc.nist.gov/pubs/ai/100/2/e2025/final
-   ```
+   → <https://csrc.nist.gov/pubs/ai/100/2/e2025/final>
 
 7. Look up the matching tactics and techniques in MITRE ATLAS, the adversarial threat knowledge base for AI systems, and note the mitigations it lists.
 
-   ```bash
-   https://atlas.mitre.org/
-   ```
+   → <https://atlas.mitre.org/>
 
 8. Work through the NSA/CISA 'Deploying AI Systems Securely' controls under its three categories — secure the deployment environment, continuously protect the AI system, and secure AI operation and maintenance.
 
-   ```bash
-   https://www.cisa.gov/news-events/alerts/2024/04/15/joint-guidance-deploying-ai-systems-securely
-   ```
+   → <https://www.cisa.gov/news-events/alerts/2024/04/15/joint-guidance-deploying-ai-systems-securely>
 
 9. Add the CISA/NSA AI data-security controls that protect the training pipeline: data provenance tracking, cryptographic integrity verification, digital signatures on dataset revisions, access control by classification, encryption in transit and at rest, and continuous risk assessment.
 10. Produce the hardening checklist for the AI components in your Lab 7 design. Every item names the control, the attack class it addresses, who owns it and how it is verified.

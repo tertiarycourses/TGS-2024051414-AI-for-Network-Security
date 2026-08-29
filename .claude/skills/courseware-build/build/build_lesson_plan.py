@@ -52,9 +52,13 @@ def _deck_lab_slides():
     for i, sl in enumerate(deck.slides, 1):
         for sh in sl.shapes:
             if sh.has_text_frame:
-                m = _re.fullmatch(r"LAB (\d+)", sh.text_frame.text.strip())
+                _t = sh.text_frame.text.strip()
+                m = _re.fullmatch(r"LAB (\d+)", _t)
                 if m and int(m.group(1)) not in out:
-                    out[int(m.group(1))] = i
+                    out[int(m.group(1))] = i          # briefing slide = block START
+                v = _re.fullmatch(r"LAB (\d+) · VERIFY", _t)
+                if v:
+                    out[("end", int(v.group(1)))] = i  # VERIFY slide = block END
     return out
 
 
@@ -102,11 +106,16 @@ def _span(first, last, fallback=""):
 
 
 def lab_slides(nums):
-    """'Slides 41-55' style reference for the labs in this session."""
-    got = sorted(LAB_SLIDE[n] for n in nums if n in LAB_SLIDE)
-    if not got:
+    """'Slides 41-56' — from the FIRST lab's briefing to the LAST lab's VERIFY slide.
+    Using the last briefing as the range end silently dropped a third of each topic's
+    hands-on slides, so the end bound is resolved explicitly."""
+    starts = [LAB_SLIDE[n] for n in nums if n in LAB_SLIDE]
+    ends = [LAB_SLIDE[("end", n)] for n in nums if ("end", n) in LAB_SLIDE]
+    if not starts:
         return ""
-    return f"Slides {got[0]}-{got[-1]}" if len(got) > 1 else f"Slide {got[0]}"
+    first = min(starts)
+    last = max(ends) if ends else max(starts)
+    return f"Slides {first}-{last}" if last > first else f"Slide {first}"
 
 # ------------------------------------------------ schedule (single source of truth for timing)
 # (start, end, minutes, kind, activity_text)  kind: admin/topic/lab/break/lunch/assess/recap
@@ -140,7 +149,7 @@ SCHEDULE = {
 # Keyed by (day, start time). Lab rows resolve from the live deck via lab_slides(); the
 # concept/admin rows carry the fixed admin + core-concept slide ranges of the deck.
 SLIDE_REF = {
- (1,"9:30"):  _span("Digital Attendance (Mandatory)","Interactive Practice Tools","1-19").replace("3-","1-"),
+ (1,"9:30"):  "1-" + str(_num("Interactive Practice Tools", 19)),
  (1,"10:00"): _span("Network Security, and Why It Now Needs AI","Should This Detection Be a Rule or a Model?","20-31"),
  (1,"11:15"): "",
  (1,"11:30"): _at("AI-Assisted Network Threat and Vulnerability Analysis","32") + "-" + str((LAB_SLIDE.get(3,51) - 1) if LAB_SLIDE else 50),
@@ -156,9 +165,9 @@ SLIDE_REF = {
  (2,"14:30"): (_at("AI-Assisted Security Incident Documentation and Response","113") + "-" + str(LAB_SLIDE.get(12,135) - 1)) if LAB_SLIDE else "113-134",
  (2,"16:00"): "",
  (2,"16:15"): (str(LAB_SLIDE.get(12,135)) + ", " + _span("Course Summary & Next Steps","Support","142-147")) if LAB_SLIDE else "135, 142-147",
- (2,"16:45"): _at("LAST:Assessment","148"),
- (2,"17:00"): _span("LAST:Assessment","LAST:Assessment Flow","148-149"),
- (2,"18:00"): _span("LAST:Assessment","LAST:Thank You!","148-151"),
+ (2,"16:45"): _at("Briefing for Assessment","13"),
+ (2,"17:00"): _span("LAST:Assessment","LAST:Assessment Flow","152-153"),
+ (2,"18:00"): _span("LAST:Assessment","LAST:Digital Attendance (Mandatory)","152-154"),
 }
 
 # The assessment start time is READ from the schedule, so this sentence can never
@@ -177,6 +186,60 @@ def _first_assess_start():
     return "the end of the day"
 _ASSESS_START = _first_assess_start()
 
+
+# ------------------------------------------------ slide-reference sanity guard
+# Auto-derived references fail silently by producing plausible-looking wrong
+# numbers, so every emitted reference is range-checked against the live deck.
+def _assert_slide_refs():
+    import glob, re as _re
+    try:
+        from pptx import Presentation
+    except ImportError:
+        return
+    cands = sorted(glob.glob(os.path.join(REPO, "courseware", "*.pptx")))
+    if not cands:
+        return
+    total = len(Presentation(cands[0]).slides._sldIdLst)
+    bad = []
+    for key, ref in SLIDE_REF.items():
+        for part in str(ref).split(","):
+            part = part.strip()
+            if not part:
+                continue
+            nums = [int(x) for x in _re.findall(r"\d+", part)]
+            if not nums:
+                continue
+            if any(n < 1 or n > total for n in nums):
+                bad.append((key, ref, f"outside 1..{total}"))
+            elif len(nums) == 2 and nums[1] < nums[0]:
+                bad.append((key, ref, "inverted range"))
+    # A bounds check alone is NOT enough: a wrong-but-in-range reference still
+    # passes it (152-155 was in range and still wrong). So also assert that each
+    # SEMANTIC row points at a slide whose title actually matches the row.
+    EXPECT = {
+        (2, "16:45"): "Briefing for Assessment",
+        (2, "17:00"): "Assessment",
+        (2, "18:00"): "Assessment",
+    }
+    for key, want in EXPECT.items():
+        ref = str(SLIDE_REF.get(key, ""))
+        first = _re.findall(r"\d+", ref)
+        if not first:
+            continue
+        n = int(first[0])
+        # TITLE_SLIDE holds BOTH the first occurrence (bare key) and the last
+        # ("LAST:" key). The admin block repeats at the end of the deck, so a
+        # match on either is legitimate — checking only the bare keys reported a
+        # false failure on the end-block Assessment slide.
+        titles = [t[5:] if t.startswith("LAST:") else t
+                  for t, i in TITLE_SLIDE.items() if i == n]
+        if want not in titles:
+            bad.append((key, ref, f"slide {n} is {titles or ['?']}, expected {want!r}"))
+    if bad:
+        raise SystemExit("BUILD FAILED — bad LP slide references:\n" +
+                         "\n".join(f"  {k}: {r!r} ({why})" for k, r, why in bad))
+_assert_slide_refs()
+
 # ------------------------------------------------ build document
 doc=Document()
 normal=doc.styles["Normal"]; normal.font.name="Arial"; normal.font.size=Pt(11)
@@ -185,14 +248,22 @@ prodoc.style_headings(doc)
 prodoc.add_cover_page(doc,"LESSON PLAN",C.TITLE,C.VERSION.lstrip("v"),
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,[
+_VCR = [
  ("1.0",C.VERSION_DATE,
   "Initial release of the AI for Network Security lesson plan — 2 days, 8 instructional hours per "
   "day, 4 topics aligned to LO1-LO4 and TSC "+C.TSC_CODE+", 12 hands-on AI-assisted labs, and the "
   "WA-SAQ + Case Study assessment on Day 2.",C.TRAINER),
- (C.VERSION.lstrip("v"),C.VERSION_DATE,
+ ("1.1",C.VERSION_DATE,
   "Quality-audit revision. Process-map stage labels are now authored short names in the single source (never derived by truncation), with a build-time guard; procedure-slide headings use one uniform size per slide; the Support slide became a tile grid; the day schedule moved to a 9:30 am start with exactly 8 instructional hours per day (lunch and tea breaks excluded, enforced by assertion); the Case Study is 1 hour, matching the paper and the deck.",C.TRAINER),
-])
+ ("1.2",C.VERSION_DATE,
+  "Wired the browser practice tools into the lab procedures. The IP Calculator now scopes the scan in Lab 1 and carves the security zones in Lab 7; the PCAP Analyzer triages the capture in Lab 2 and summarises capture evidence in Lab 11; the Cybersecurity Simulator grounds the likelihood scores in Lab 5; the Cryptography Toolkit demonstrates the confidentiality control in Lab 8 and hash tamper-evidence in Lab 11; RegexLab builds and negatively tests the log filters in Lab 10. Hacklab and FauxBank are documented as optional, unassessed extension work.",C.TRAINER),
+]
+prodoc.add_version_control(doc,_VCR)
+_vcr_versions=[r[0] for r in _VCR]
+assert len(_vcr_versions)==len(set(_vcr_versions)), \
+    f"duplicate rows in the Document Version Control Record: {_vcr_versions}"
+assert _vcr_versions[-1]==C.VERSION.lstrip("v"), \
+    f"version control record ends at {_vcr_versions[-1]}, but the build is {C.VERSION}"
 prodoc.add_toc(doc)
 
 def H(text,level=1):

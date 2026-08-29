@@ -20,7 +20,7 @@ DOMAIN4 = [
               "bottleneck of a security operation: alert volume. You deduplicate, cluster and enrich the alerts, use an "
               "AI assistant to rank them and explain its reasoning, and then measure whether the ranking was any good."),
         build="A logging and audit specification, plus a triaged alert queue ranked by priority with an AI-generated rationale for each and your own verification of the top ten.",
-        services="syslog, Windows Event Log, Python, pandas, a generative AI assistant",
+        services="syslog, Windows Event Log, RegexLab (alfredang.github.io/regexgenerator), Python, pandas, a generative AI assistant",
         steps=[
             ("Write the logging specification: for each asset class name the log source, the events that must be captured, the retention period and where the log is centralised.", ""),
             ("Include the events that matter for investigation — authentication success and failure, privilege escalation, configuration change, firewall deny, and process or service creation. A log of only failures cannot reconstruct an intrusion.", ""),
@@ -29,6 +29,10 @@ DOMAIN4 = [
             ("Confirm the log integrity controls: append-only or write-once storage, restricted access, and forwarding off the host — an attacker with local admin will clear the local log first.", ""),
             ("Load the provided multi-source alert set into pandas and look at the raw volume. This is the problem the rest of the lab solves.",
              "python3 triage.py   # provided in labs/lab-10/"),
+            ("Before filtering at scale, build the pattern and prove it works. Paste a representative log line into RegexLab, write a regex that extracts the source IP and the event type, and check the live match count and the match explanation. A filter you have not tested against real lines is how a triage pipeline silently drops evidence.",
+             "https://alfredang.github.io/regexgenerator/"),
+            ("Use the same tool to write a pattern that catches authentication FAILURES but not successes, then deliberately test it against a success line to confirm it does not match. Record both results — the negative test is the one that matters.",
+             "https://alfredang.github.io/regexgenerator/"),
             ("Deduplicate: collapse identical alerts on the same source, destination and signature within a time window into one alert with a count. Record how much this alone reduces the queue.",
              "df.groupby(['src','dst','signature']).agg(count=('ts','size'), first=('ts','min'), last=('ts','max'))"),
             ("Cluster the remaining alerts by source and by time so that a burst from one host reads as one incident rather than forty unrelated events.", ""),
@@ -62,7 +66,7 @@ DOMAIN4 = [
               "which assets, what was done, what the evidence is and who was accountable. You use AI to draft the "
               "narrative and then you correct it against the log — because the draft will confidently state things the evidence does not."),
         build="A complete incident record with a reconstructed evidence-based timeline, a justified severity classification, the actions taken, the evidence inventory and the notification decisions.",
-        services="Lab 10 alert queue and raw logs, NIST SP 800-61, an incident record template, a generative AI assistant",
+        services="Lab 10 alert queue and raw logs, the PCAP Analyzer and Cryptography Toolkit, NIST SP 800-61, an incident record template, a generative AI assistant",
         steps=[
             ("Open an incident record and fill the header: incident ID, date and time of detection, detected by, reporter, current status and the assigned handler.", ""),
             ("Reconstruct the timeline from the raw logs in UTC. Every entry needs a timestamp, the event, the source system and the log line that proves it. A timeline entry with no evidence reference is a claim, not a finding.", ""),
@@ -70,8 +74,12 @@ DOMAIN4 = [
             ("Classify the severity against written criteria: assets affected, data classification involved, business impact and whether the activity is ongoing. State the criteria you applied so the rating can be reviewed.", ""),
             ("List the affected assets by name from the Lab 4 register, with their criticality and the data classification each one holds.", ""),
             ("Record the response actions taken with a timestamp and the name of the person who took each one. Include the actions that were considered and rejected, and why — a reviewer will ask.", ""),
+            ("If a packet capture is part of your evidence, summarise it before you cite it. Open it in the PCAP Analyzer and record the capture window, the packet and byte counts, and the conversations involving the affected asset — that summary is what a reader who cannot open a pcap actually needs.",
+             "https://alfredang.github.io/pcapanalyzer/"),
             ("Build the evidence inventory: log extracts, packet captures, screenshots and system images, each with where it is stored, its hash and who has access. This is what makes the record defensible.",
              "shasum -a 256 evidence/*.pcapng evidence/*.log > evidence/MANIFEST.sha256"),
+            ("Confirm you understand what that hash proves. Put the same text into the Cryptography Toolkit twice and check the digest is identical, then change one character and check it is completely different. That property — and only that property — is what makes your evidence manifest tamper-evident.",
+             "https://alfredang.github.io/cryptography-toolkit/"),
             ("Record the notification decisions — who was informed, when, and which obligations were considered. In Singapore, consider whether the PDPA data-breach notification obligation to the PDPC and affected individuals is engaged, and record the reasoning either way.", ""),
             ("Ask your AI assistant to draft the incident narrative from your timeline.",
              "Prompt: 'Draft a factual incident narrative from this evidence timeline. Use only what the timeline supports. Mark every inference explicitly as an inference. Do not speculate about attribution.'"),

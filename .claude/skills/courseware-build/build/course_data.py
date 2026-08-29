@@ -20,7 +20,7 @@ Content lineage:
 TITLE        = "AI for Network Security"
 SHORT_TITLE  = "AI-for-Network-Security"
 COURSE_CODE  = "TGS-2024051414"
-VERSION      = "v1.1"
+VERSION      = "v1.2"
 VERSION_DATE = "29 August 2026"
 ORG          = "Tertiary Infotech Academy Pte Ltd"
 UEN          = "UEN: 201200696W"
@@ -163,15 +163,22 @@ LAB_TOOLS = [
     ("Python 3 + pandas / scikit-learn", "Runs the AI anomaly-detection and log-triage notebooks."),
     ("A generative AI assistant", "Claude, ChatGPT or Copilot — used as the AI analyst copilot throughout the labs."),
     ("A spreadsheet", "Excel, Numbers or Google Sheets for the asset register and risk register labs."),
-    ("A modern browser", "For the online reconnaissance, CVE lookup and simulator activities."),
+    ("A modern browser", "For the CVE lookup and the seven browser-based practice tools — no install needed, and the PCAP Analyzer processes your capture locally without uploading it."),
 ]
 
 BROWSER_TOOLS = [
-    ("Cybersecurity Simulator", "Play through phishing, malware and DDoS attacks — alfredang.github.io/cybersecuritysimulator"),
-    ("Ethical Hacking Simulator", "See how a security test is scoped and run — alfredang.github.io/ethnicalhacking"),
-    ("FauxBank Pentest Target", "A safe, deliberately vulnerable web app — pentest-fauxbank.vercel.app"),
-    ("Cryptography Toolkit", "Hash and encrypt to see confidentiality and integrity — alfredang.github.io/cryptography-toolkit"),
-    ("IP Calculator", "Work out network, broadcast and host ranges — alfredang.github.io/ipcalculator"),
-    ("PCAP Analyzer", "Upload a capture for a quick conversation summary — alfredang.github.io/pcapanalyzer"),
-    ("Regex Generator", "Build patterns to filter and search log files — alfredang.github.io/regexgenerator"),
+    ("IP Calculator  ·  Labs 1 & 7",
+     "Scope the scan and carve one subnet per security zone — alfredang.github.io/ipcalculator"),
+    ("PCAP Analyzer  ·  Labs 2 & 11",
+     "Read a capture in the browser: protocol mix, top talkers, conversations — alfredang.github.io/pcapanalyzer"),
+    ("Cybersecurity Simulator  ·  Lab 5",
+     "Run phishing, SQLi and social-engineering attacks to ground your likelihood scores — alfredang.github.io/cybersecuritysimulator"),
+    ("Cryptography Toolkit  ·  Labs 8 & 11",
+     "AES/DES/RSA and hashing — the confidentiality and integrity controls, and why a hash is tamper-evident — alfredang.github.io/cryptography-toolkit"),
+    ("RegexLab  ·  Lab 10",
+     "Write and TEST the log filters that drive alert triage, including the negative test — alfredang.github.io/regexgenerator"),
+    ("Hacklab  ·  optional extension",
+     "A scripted 10-phase penetration-test walkthrough. Not assessed — run it to see what an attacker learns about you — alfredang.github.io/ethnicalhacking"),
+    ("FauxBank  ·  optional extension",
+     "A safe, deliberately vulnerable banking app with a simulated scanner and report generator. Not assessed — pentest-fauxbank.vercel.app"),
 ]

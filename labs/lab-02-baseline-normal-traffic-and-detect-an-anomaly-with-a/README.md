@@ -14,7 +14,7 @@ Signature detection only finds what someone has already named. This lab builds t
 
 A labelled anomaly report: the connections your Isolation Forest model scored as anomalous, ranked by score, with your own verdict of true positive or false positive against the packet evidence.
 
-**Tools:** Wireshark, tshark, Python 3, pandas, scikit-learn, a generative AI assistant
+**Tools:** Wireshark, tshark, the PCAP Analyzer (alfredang.github.io/pcapanalyzer), Python 3, pandas, scikit-learn, a generative AI assistant
 
 ## Step-by-step
 
@@ -26,25 +26,30 @@ A labelled anomaly report: the connections your Isolation Forest model scored as
    ```
 
 3. Stop the capture and save it as traffic.pcapng.
-4. Export per-connection features from the capture with tshark — source, destination, port, packet count, byte count and duration.
+4. Before writing any code, get a fast read on what you captured. Drag traffic.pcapng into the PCAP Analyzer (it runs entirely in your browser — nothing is uploaded) and note the packet count, capture duration, protocol distribution, top talkers and top conversations.
+
+   → <https://alfredang.github.io/pcapanalyzer/>
+
+5. Write down which conversation you EXPECT the model to flag as anomalous, based on the top-talkers view alone. You will check that prediction against the model's output in step 10 — a human hypothesis first is what stops you rationalising whatever the model happens to say.
+6. Export per-connection features from the capture with tshark — source, destination, port, packet count, byte count and duration.
 
    ```bash
    tshark -r traffic.pcapng -q -z conv,tcp > conversations.txt
    ```
 
-5. Export the same data as CSV for the model to read.
+7. Export the same data as CSV for the model to read.
 
    ```bash
    tshark -r traffic.pcapng -T fields -e ip.src -e ip.dst -e tcp.dstport -e frame.len -e frame.time_relative -E header=y -E separator=, > traffic.csv
    ```
 
-6. Load traffic.csv into pandas and aggregate it per (source, destination, port) conversation: packet count, total bytes, mean packet size and duration.
+8. Load traffic.csv into pandas and aggregate it per (source, destination, port) conversation: packet count, total bytes, mean packet size and duration.
 
    ```bash
    python3 baseline.py   # provided in labs/lab-02/
    ```
 
-7. Fit an Isolation Forest on the baseline period only, with a contamination rate of 0.02, then score every conversation in the full capture.
+9. Fit an Isolation Forest on the baseline period only, with a contamination rate of 0.02, then score every conversation in the full capture.
 
    ```bash
    from sklearn.ensemble import IsolationForest
@@ -52,14 +57,14 @@ A labelled anomaly report: the connections your Isolation Forest model scored as
    df['score'] = model.decision_function(X_all)
    ```
 
-8. Sort by score ascending and inspect the twenty most anomalous conversations. Open each one in Wireshark using a display filter and decide what it actually was.
+10. Sort by score ascending and inspect the twenty most anomalous conversations. Open each one in Wireshark using a display filter and decide what it actually was.
 
    ```bash
    ip.addr == 192.168.56.101 && tcp.port == 445
    ```
 
-9. Mark each of the twenty as a true positive or a false positive, and write one sentence saying what evidence decided it.
-10. Ask your AI assistant to explain the anomalies and suggest which features would separate the scan from the file copy more cleanly. Test one of its suggestions and record whether it improved the result.
+11. Mark each of the twenty as a true positive or a false positive, and write one sentence saying what evidence decided it.
+12. Ask your AI assistant to explain the anomalies and suggest which features would separate the scan from the file copy more cleanly. Test one of its suggestions and record whether it improved the result.
 
    ```bash
    Prompt: 'These network conversations were scored as anomalous by an Isolation Forest. Given packet count, byte count and duration, explain what behaviour each likely represents and suggest one additional feature that would separate port scanning from a legitimate large file transfer.'

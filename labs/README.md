@@ -1,11 +1,29 @@
 # Hands-On Labs — AI for Network Security (TGS-2024051414)
 
 Twelve labs across the four course topics. Each lab folder holds its own step-by-step guide.
-The labs form one continuous engagement — each deliverable feeds the next lab, so keep them all.
+The labs form one continuous engagement — each deliverable feeds the next, so keep them all.
 
 > **Authorisation:** run every scanning, capture and testing technique only against the lab network
 > your trainer provides, or a network you own. Unauthorised access to a computer is a criminal
 > offence under the Singapore Computer Misuse Act and its equivalents elsewhere.
+
+## Browser practice tools used in these labs
+
+No install needed. The PCAP Analyzer processes your capture locally — nothing is uploaded.
+
+| Tool | Used in |
+|---|---|
+| [IP Calculator](https://alfredang.github.io/ipcalculator) | Labs 1 & 7 |
+| [PCAP Analyzer](https://alfredang.github.io/pcapanalyzer) | Labs 2 & 11 |
+| [Cybersecurity Simulator](https://alfredang.github.io/cybersecuritysimulator) | Lab 5 |
+| [Cryptography Toolkit](https://alfredang.github.io/cryptography-toolkit) | Labs 8 & 11 |
+| [RegexLab](https://alfredang.github.io/regexgenerator) | Lab 10 |
+
+Two further tools are optional extension work — they teach offensive penetration testing,
+which sits outside the abilities this course assesses, so they are not part of any lab:
+
+- [Hacklab](https://alfredang.github.io/ethnicalhacking) — A scripted 10-phase penetration-test walkthrough. Not assessed
+- [FauxBank](https://pentest-fauxbank.vercel.app) — A safe, deliberately vulnerable banking app with a simulated scanner and report generator. Not assessed
 
 | Lab | Title | Topic | LO | K / A |
 |---|---|---|---|---|
@@ -25,4 +43,5 @@ The labs form one continuous engagement — each deliverable feeds the next lab,
 ## Environment
 
 See **Before You Start — Environment Setup** in the Learner Guide for the full install and
-verification steps (Nmap, Wireshark/tshark, Python 3 with pandas and scikit-learn, and an AI assistant).
+verification steps (Nmap, Wireshark/tshark, Python 3 with pandas and scikit-learn, an AI assistant
+and the browser tools above).

@@ -14,30 +14,38 @@ A risk is not a vulnerability. A risk is a threat exploiting a vulnerability aga
 
 A scored risk register with inherent risk, existing controls and residual risk for every entry, plus a 5x5 heat map showing the distribution.
 
-**Tools:** Lab 3 worklist, Lab 4 asset register, a spreadsheet, a generative AI assistant
+**Tools:** Lab 3 worklist, Lab 4 asset register, the Cybersecurity Simulator (alfredang.github.io/cybersecuritysimulator), a spreadsheet, a generative AI assistant
 
 ## Step-by-step
 
 1. Create the risk register with the columns Risk ID, Asset, Threat, Vulnerability, Existing Controls, Likelihood (1-5), Impact (1-5), Inherent Risk, Treatment, Owner, Target Date, Residual Risk.
 2. Write each risk as a full sentence before you score it: 'A [threat actor] exploits [vulnerability] on [asset], resulting in [consequence].' A risk you cannot phrase this way is not yet a risk.
-3. Score Likelihood 1-5 using evidence — is the vulnerability on the CISA KEV list, is the asset internet-facing, is there a public exploit, does an existing control reduce the chance?
-4. Score Impact 1-5 from the asset's criticality in Lab 4, adjusted for what this specific threat would actually do to it.
-5. Compute Inherent Risk as Likelihood x Impact, and band it: 1-4 Low, 5-9 Medium, 10-14 High, 15-25 Critical.
+3. Before you score likelihood from a spreadsheet, see the attacks work. Open the Cybersecurity Simulator and run the Phishing, SQL Injection and Social Engineering modules — note for each how little the attacker needs and how plausible the lure is. Likelihood is a judgement about human and technical reality, not a number you invent.
+
+   → <https://alfredang.github.io/cybersecuritysimulator/>
+
+4. Use the simulator's Password Strength Lab to test three passwords of the kind your organisation actually allows. Record the estimated crack time — that figure is the evidence behind any credential-attack likelihood score you write.
+
+   → <https://alfredang.github.io/cybersecuritysimulator/>
+
+5. Score Likelihood 1-5 using evidence — is the vulnerability on the CISA KEV list, is the asset internet-facing, is there a public exploit, does an existing control reduce the chance, and what did the simulator show you about how easily this attack lands?
+6. Score Impact 1-5 from the asset's criticality in Lab 4, adjusted for what this specific threat would actually do to it.
+7. Compute Inherent Risk as Likelihood x Impact, and band it: 1-4 Low, 5-9 Medium, 10-14 High, 15-25 Critical.
 
    ```bash
    Inherent Risk = Likelihood × Impact
    ```
 
-6. Record the controls already in place for each risk, then re-score to get Residual Risk. The gap between inherent and residual is exactly what your existing controls are buying you.
-7. Ask your AI assistant to challenge your likelihood scores against current threat activity.
+8. Record the controls already in place for each risk, then re-score to get Residual Risk. The gap between inherent and residual is exactly what your existing controls are buying you.
+9. Ask your AI assistant to challenge your likelihood scores against current threat activity.
 
    ```bash
    Prompt: 'Here is a risk register with likelihood scores from 1 to 5. For each risk, state whether current threat intelligence suggests my likelihood is too high, too low or about right, and give the reason. Note where you are uncertain.'
    ```
 
-8. Adjust the scores you agree with and document the ones you rejected. A risk register that is never challenged is a risk register nobody believes.
-9. Build the 5x5 heat map — likelihood on one axis, impact on the other, each cell counting the risks that land in it — and identify which quadrant carries your exposure.
-10. Sort by residual risk and confirm the top five are the risks you would genuinely lose sleep over. If they are not, your scoring is wrong.
+10. Adjust the scores you agree with and document the ones you rejected. A risk register that is never challenged is a risk register nobody believes.
+11. Build the 5x5 heat map — likelihood on one axis, impact on the other, each cell counting the risks that land in it — and identify which quadrant carries your exposure.
+12. Sort by residual risk and confirm the top five are the risks you would genuinely lose sleep over. If they are not, your scoring is wrong.
 
 ## Test it
 

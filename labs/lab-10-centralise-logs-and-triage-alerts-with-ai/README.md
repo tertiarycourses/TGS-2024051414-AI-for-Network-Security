@@ -14,7 +14,7 @@ Incident response is only as good as the evidence available when it starts. In t
 
 A logging and audit specification, plus a triaged alert queue ranked by priority with an AI-generated rationale for each and your own verification of the top ten.
 
-**Tools:** syslog, Windows Event Log, Python, pandas, a generative AI assistant
+**Tools:** syslog, Windows Event Log, RegexLab (alfredang.github.io/regexgenerator), Python, pandas, a generative AI assistant
 
 ## Step-by-step
 
@@ -33,22 +33,30 @@ A logging and audit specification, plus a triaged alert queue ranked by priority
    python3 triage.py   # provided in labs/lab-10/
    ```
 
-6. Deduplicate: collapse identical alerts on the same source, destination and signature within a time window into one alert with a count. Record how much this alone reduces the queue.
+6. Before filtering at scale, build the pattern and prove it works. Paste a representative log line into RegexLab, write a regex that extracts the source IP and the event type, and check the live match count and the match explanation. A filter you have not tested against real lines is how a triage pipeline silently drops evidence.
+
+   → <https://alfredang.github.io/regexgenerator/>
+
+7. Use the same tool to write a pattern that catches authentication FAILURES but not successes, then deliberately test it against a success line to confirm it does not match. Record both results — the negative test is the one that matters.
+
+   → <https://alfredang.github.io/regexgenerator/>
+
+8. Deduplicate: collapse identical alerts on the same source, destination and signature within a time window into one alert with a count. Record how much this alone reduces the queue.
 
    ```bash
    df.groupby(['src','dst','signature']).agg(count=('ts','size'), first=('ts','min'), last=('ts','max'))
    ```
 
-7. Cluster the remaining alerts by source and by time so that a burst from one host reads as one incident rather than forty unrelated events.
-8. Enrich each cluster with context from your earlier labs — the asset criticality from Lab 4 and the risk score from Lab 5. Context is what turns an alert into a priority.
-9. Ask your AI assistant to rank the clusters and explain each ranking.
+9. Cluster the remaining alerts by source and by time so that a burst from one host reads as one incident rather than forty unrelated events.
+10. Enrich each cluster with context from your earlier labs — the asset criticality from Lab 4 and the risk score from Lab 5. Context is what turns an alert into a priority.
+11. Ask your AI assistant to rank the clusters and explain each ranking.
 
    ```bash
    Prompt: 'Here are deduplicated, enriched security alert clusters with asset criticality. Rank them by investigation priority. For each, state the likely attack technique, the evidence supporting it, and what a responder should check first. Flag any cluster where the evidence is ambiguous.'
    ```
 
-10. Verify the top ten yourself against the raw logs. Count how many were genuinely high priority — that number is your triage precision, and it is what you report.
-11. Write down the two alert types the AI ranked poorly and say what context it was missing. That gap is the enrichment you add next time.
+12. Verify the top ten yourself against the raw logs. Count how many were genuinely high priority — that number is your triage precision, and it is what you report.
+13. Write down the two alert types the AI ranked poorly and say what context it was missing. That gap is the enrichment you add next time.
 
 ## Test it
 

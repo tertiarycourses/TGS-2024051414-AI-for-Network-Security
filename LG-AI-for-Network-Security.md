@@ -1,6 +1,6 @@
 # AI for Network Security — Learner Guide
 
-**WSQ Course Code:** TGS-2024051414  |  **Conducted by:** Tertiary Infotech Academy Pte Ltd (UEN 201200696W)  |  **Version v1.1 · 29 August 2026**
+**WSQ Course Code:** TGS-2024051414  |  **Conducted by:** Tertiary Infotech Academy Pte Ltd (UEN 201200696W)  |  **Version v1.2 · 29 August 2026**
 
 ## Contents
 
@@ -85,7 +85,7 @@ Use this guide alongside the course slides and the lab folders in labs/. The sli
 - Python 3 + pandas / scikit-learn — Runs the AI anomaly-detection and log-triage notebooks.
 - A generative AI assistant — Claude, ChatGPT or Copilot — used as the AI analyst copilot throughout the labs.
 - A spreadsheet — Excel, Numbers or Google Sheets for the asset register and risk register labs.
-- A modern browser — For the online reconnaissance, CVE lookup and simulator activities.
+- A modern browser — For the CVE lookup and the seven browser-based practice tools — no install needed, and the PCAP Analyzer processes your capture locally without uploading it.
 
 **Install and verify the toolchain**
 
@@ -131,6 +131,21 @@ Several labs use a generative AI assistant (Claude, ChatGPT or Copilot) as an an
 
 - Never paste real production data, credentials, customer information or unredacted logs into a public AI assistant. Sanitise first — replace real addresses, hostnames and identifiers with lab equivalents.
 - Always verify what the assistant tells you against an authoritative source. Every lab that uses AI has a verification step for exactly this reason; a confident answer is not a correct answer.
+
+**Browser practice tools used in the labs**
+
+Five of the labs use a free browser-based tool — nothing to install, and none of them send your data anywhere. Bookmark these before Day 1:
+
+- IP Calculator  ·  Labs 1 & 7 — Scope the scan and carve one subnet per security zone — alfredang.github.io/ipcalculator
+- PCAP Analyzer  ·  Labs 2 & 11 — Read a capture in the browser: protocol mix, top talkers, conversations — alfredang.github.io/pcapanalyzer
+- Cybersecurity Simulator  ·  Lab 5 — Run phishing, SQLi and social-engineering attacks to ground your likelihood scores — alfredang.github.io/cybersecuritysimulator
+- Cryptography Toolkit  ·  Labs 8 & 11 — AES/DES/RSA and hashing — the confidentiality and integrity controls, and why a hash is tamper-evident — alfredang.github.io/cryptography-toolkit
+- RegexLab  ·  Lab 10 — Write and TEST the log filters that drive alert triage, including the negative test — alfredang.github.io/regexgenerator
+
+Two further tools are provided as optional extension work. They teach offensive penetration-testing technique, which sits outside the abilities this course assesses, so they are not part of any lab and are not examined. Run them if you want to see what an attacker learns about a target — that perspective sharpens the defensive judgement you are assessed on.
+
+- Hacklab  ·  optional extension — A scripted 10-phase penetration-test walkthrough. Not assessed — run it to see what an attacker learns about you — alfredang.github.io/ethnicalhacking
+- FauxBank  ·  optional extension — A safe, deliberately vulnerable banking app with a simulated scanner and report generator. Not assessed — pentest-fauxbank.vercel.app
 
 **Authorisation — read this before Lab 1**
 
@@ -190,44 +205,48 @@ Goal: You are handed an unfamiliar subnet and asked the question every security 
 
 **What you'll produce**
 
-A network configuration inventory (host, IP, OS guess, open ports, service versions) plus a written list of the configuration weaknesses you found and why each one matters.   (Tools: Nmap, Zenmap, a spreadsheet, a generative AI assistant.)
+A network configuration inventory (host, IP, OS guess, open ports, service versions) plus a written list of the configuration weaknesses you found and why each one matters.   (Tools: Nmap, Zenmap, the IP Calculator (alfredang.github.io/ipcalculator), a spreadsheet, a generative AI assistant.)
 
 **Step-by-step**
 
 1. Confirm you are scanning only the lab network you have been authorised to scan. Never scan a network you do not own or have written permission to test.
-2. Discover which hosts are alive on the lab subnet with a ping sweep. Note how many hosts answer.
+2. Before you scan anything, work out exactly what 192.168.56.0/24 covers so your scan scope is defensible. Open the IP Calculator, enter the CIDR, and record the network address, the broadcast address, the usable host range and the host count.
+
+   → <https://alfredang.github.io/ipcalculator/>
+
+3. Discover which hosts are alive on the lab subnet with a ping sweep. Note how many hosts answer, and compare that against the usable host count you just calculated.
 
    ```bash
    nmap -sn 192.168.56.0/24
    ```
 
-3. Run a service and version scan against the live hosts to learn what each one is actually running.
+4. Run a service and version scan against the live hosts to learn what each one is actually running.
 
    ```bash
    nmap -sV -O -T4 192.168.56.0/24 -oN inventory.txt
    ```
 
-4. Scan the full TCP port range on the one host that looks most interesting, so nothing above port 1024 is missed.
+5. Scan the full TCP port range on the one host that looks most interesting, so nothing above port 1024 is missed.
 
    ```bash
    nmap -sV -p- -T4 192.168.56.101 -oN host101-full.txt
    ```
 
-5. Export the scan to a machine-readable form so it can be loaded into a spreadsheet or a script.
+6. Export the scan to a machine-readable form so it can be loaded into a spreadsheet or a script.
 
    ```bash
    nmap -sV 192.168.56.0/24 -oX inventory.xml
    ```
 
-6. Build the inventory table in a spreadsheet with the columns Host, IP, OS, Open Ports, Services, Versions, Owner, Business Function.
-7. Read the inventory for configuration weaknesses. Flag every unencrypted management protocol (Telnet 23, FTP 21, HTTP 80 on an admin interface), every service version that is behind, and every port that has no business being open.
-8. Paste the sanitised Nmap output into your AI assistant and ask it to identify the configuration weaknesses and explain the risk of each. Compare its list against yours.
+7. Build the inventory table in a spreadsheet with the columns Host, IP, OS, Open Ports, Services, Versions, Owner, Business Function.
+8. Read the inventory for configuration weaknesses. Flag every unencrypted management protocol (Telnet 23, FTP 21, HTTP 80 on an admin interface), every service version that is behind, and every port that has no business being open.
+9. Paste the sanitised Nmap output into your AI assistant and ask it to identify the configuration weaknesses and explain the risk of each. Compare its list against yours.
 
    ```bash
    Prompt: 'Here is Nmap output from a network I am authorised to assess. Identify configuration weaknesses, name the affected protocol or service, and explain the risk of each in one sentence.'
    ```
 
-9. Reconcile the two lists. Record anything the AI found that you missed, and anything it claimed that the evidence does not support — the second list is the more important one.
+10. Reconcile the two lists. Record anything the AI found that you missed, and anything it claimed that the evidence does not support — the second list is the more important one.
 
 **Test it — how you know the lab is done**
 
@@ -254,7 +273,7 @@ Goal: Signature detection only finds what someone has already named. This lab bu
 
 **What you'll produce**
 
-A labelled anomaly report: the connections your Isolation Forest model scored as anomalous, ranked by score, with your own verdict of true positive or false positive against the packet evidence.   (Tools: Wireshark, tshark, Python 3, pandas, scikit-learn, a generative AI assistant.)
+A labelled anomaly report: the connections your Isolation Forest model scored as anomalous, ranked by score, with your own verdict of true positive or false positive against the packet evidence.   (Tools: Wireshark, tshark, the PCAP Analyzer (alfredang.github.io/pcapanalyzer), Python 3, pandas, scikit-learn, a generative AI assistant.)
 
 **Step-by-step**
 
@@ -266,25 +285,30 @@ A labelled anomaly report: the connections your Isolation Forest model scored as
    ```
 
 3. Stop the capture and save it as traffic.pcapng.
-4. Export per-connection features from the capture with tshark — source, destination, port, packet count, byte count and duration.
+4. Before writing any code, get a fast read on what you captured. Drag traffic.pcapng into the PCAP Analyzer (it runs entirely in your browser — nothing is uploaded) and note the packet count, capture duration, protocol distribution, top talkers and top conversations.
+
+   → <https://alfredang.github.io/pcapanalyzer/>
+
+5. Write down which conversation you EXPECT the model to flag as anomalous, based on the top-talkers view alone. You will check that prediction against the model's output in step 10 — a human hypothesis first is what stops you rationalising whatever the model happens to say.
+6. Export per-connection features from the capture with tshark — source, destination, port, packet count, byte count and duration.
 
    ```bash
    tshark -r traffic.pcapng -q -z conv,tcp > conversations.txt
    ```
 
-5. Export the same data as CSV for the model to read.
+7. Export the same data as CSV for the model to read.
 
    ```bash
    tshark -r traffic.pcapng -T fields -e ip.src -e ip.dst -e tcp.dstport -e frame.len -e frame.time_relative -E header=y -E separator=, > traffic.csv
    ```
 
-6. Load traffic.csv into pandas and aggregate it per (source, destination, port) conversation: packet count, total bytes, mean packet size and duration.
+8. Load traffic.csv into pandas and aggregate it per (source, destination, port) conversation: packet count, total bytes, mean packet size and duration.
 
    ```bash
    python3 baseline.py   # provided in labs/lab-02/
    ```
 
-7. Fit an Isolation Forest on the baseline period only, with a contamination rate of 0.02, then score every conversation in the full capture.
+9. Fit an Isolation Forest on the baseline period only, with a contamination rate of 0.02, then score every conversation in the full capture.
 
    ```bash
    from sklearn.ensemble import IsolationForest
@@ -292,14 +316,14 @@ model = IsolationForest(contamination=0.02, random_state=42).fit(X_baseline)
 df['score'] = model.decision_function(X_all)
    ```
 
-8. Sort by score ascending and inspect the twenty most anomalous conversations. Open each one in Wireshark using a display filter and decide what it actually was.
+10. Sort by score ascending and inspect the twenty most anomalous conversations. Open each one in Wireshark using a display filter and decide what it actually was.
 
    ```bash
    ip.addr == 192.168.56.101 && tcp.port == 445
    ```
 
-9. Mark each of the twenty as a true positive or a false positive, and write one sentence saying what evidence decided it.
-10. Ask your AI assistant to explain the anomalies and suggest which features would separate the scan from the file copy more cleanly. Test one of its suggestions and record whether it improved the result.
+11. Mark each of the twenty as a true positive or a false positive, and write one sentence saying what evidence decided it.
+12. Ask your AI assistant to explain the anomalies and suggest which features would separate the scan from the file copy more cleanly. Test one of its suggestions and record whether it improved the result.
 
    ```bash
    Prompt: 'These network conversations were scored as anomalous by an Isolation Forest. Given packet count, byte count and duration, explain what behaviour each likely represents and suggest one additional feature that would separate port scanning from a legitimate large file transfer.'
@@ -338,15 +362,11 @@ A prioritised vulnerability worklist: CVE, affected asset, CVSS score, known-exp
 1. Take the service-version list from Lab 1. Pick the six most significant services — anything internet-facing, anything running as an administrator, anything holding data.
 2. For each service version, search the NIST National Vulnerability Database for matching CVEs and record the CVE ID and CVSS v3 base score.
 
-   ```bash
-   https://nvd.nist.gov/vuln/search
-   ```
+   → <https://nvd.nist.gov/vuln/search>
 
 3. Check each CVE against the CISA Known Exploited Vulnerabilities catalogue. A CVE on the KEV list is being exploited in the wild right now and outranks a higher CVSS score that is not.
 
-   ```bash
-   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
-   ```
+   → <https://www.cisa.gov/known-exploited-vulnerabilities-catalog>
 
 4. Assign each affected asset a business criticality of High, Medium or Low, based on what a loss of confidentiality, integrity or availability would cost. Write the justification in the row.
 5. Compute a priority score for every finding so the ranking is reproducible rather than a matter of taste.
@@ -452,30 +472,38 @@ Goal: A risk is not a vulnerability. A risk is a threat exploiting a vulnerabili
 
 **What you'll produce**
 
-A scored risk register with inherent risk, existing controls and residual risk for every entry, plus a 5x5 heat map showing the distribution.   (Tools: Lab 3 worklist, Lab 4 asset register, a spreadsheet, a generative AI assistant.)
+A scored risk register with inherent risk, existing controls and residual risk for every entry, plus a 5x5 heat map showing the distribution.   (Tools: Lab 3 worklist, Lab 4 asset register, the Cybersecurity Simulator (alfredang.github.io/cybersecuritysimulator), a spreadsheet, a generative AI assistant.)
 
 **Step-by-step**
 
 1. Create the risk register with the columns Risk ID, Asset, Threat, Vulnerability, Existing Controls, Likelihood (1-5), Impact (1-5), Inherent Risk, Treatment, Owner, Target Date, Residual Risk.
 2. Write each risk as a full sentence before you score it: 'A [threat actor] exploits [vulnerability] on [asset], resulting in [consequence].' A risk you cannot phrase this way is not yet a risk.
-3. Score Likelihood 1-5 using evidence — is the vulnerability on the CISA KEV list, is the asset internet-facing, is there a public exploit, does an existing control reduce the chance?
-4. Score Impact 1-5 from the asset's criticality in Lab 4, adjusted for what this specific threat would actually do to it.
-5. Compute Inherent Risk as Likelihood x Impact, and band it: 1-4 Low, 5-9 Medium, 10-14 High, 15-25 Critical.
+3. Before you score likelihood from a spreadsheet, see the attacks work. Open the Cybersecurity Simulator and run the Phishing, SQL Injection and Social Engineering modules — note for each how little the attacker needs and how plausible the lure is. Likelihood is a judgement about human and technical reality, not a number you invent.
+
+   → <https://alfredang.github.io/cybersecuritysimulator/>
+
+4. Use the simulator's Password Strength Lab to test three passwords of the kind your organisation actually allows. Record the estimated crack time — that figure is the evidence behind any credential-attack likelihood score you write.
+
+   → <https://alfredang.github.io/cybersecuritysimulator/>
+
+5. Score Likelihood 1-5 using evidence — is the vulnerability on the CISA KEV list, is the asset internet-facing, is there a public exploit, does an existing control reduce the chance, and what did the simulator show you about how easily this attack lands?
+6. Score Impact 1-5 from the asset's criticality in Lab 4, adjusted for what this specific threat would actually do to it.
+7. Compute Inherent Risk as Likelihood x Impact, and band it: 1-4 Low, 5-9 Medium, 10-14 High, 15-25 Critical.
 
    ```bash
    Inherent Risk = Likelihood × Impact
    ```
 
-6. Record the controls already in place for each risk, then re-score to get Residual Risk. The gap between inherent and residual is exactly what your existing controls are buying you.
-7. Ask your AI assistant to challenge your likelihood scores against current threat activity.
+8. Record the controls already in place for each risk, then re-score to get Residual Risk. The gap between inherent and residual is exactly what your existing controls are buying you.
+9. Ask your AI assistant to challenge your likelihood scores against current threat activity.
 
    ```bash
    Prompt: 'Here is a risk register with likelihood scores from 1 to 5. For each risk, state whether current threat intelligence suggests my likelihood is too high, too low or about right, and give the reason. Note where you are uncertain.'
    ```
 
-8. Adjust the scores you agree with and document the ones you rejected. A risk register that is never challenged is a risk register nobody believes.
-9. Build the 5x5 heat map — likelihood on one axis, impact on the other, each cell counting the risks that land in it — and identify which quadrant carries your exposure.
-10. Sort by residual risk and confirm the top five are the risks you would genuinely lose sleep over. If they are not, your scoring is wrong.
+10. Adjust the scores you agree with and document the ones you rejected. A risk register that is never challenged is a risk register nobody believes.
+11. Build the 5x5 heat map — likelihood on one axis, impact on the other, each cell counting the risks that land in it — and identify which quadrant carries your exposure.
+12. Sort by residual risk and confirm the top five are the risks you would genuinely lose sleep over. If they are not, your scoring is wrong.
 
 **Test it — how you know the lab is done**
 
@@ -513,9 +541,7 @@ A risk management plan: treatment decisions with named controls, owners, target 
 5. Add an owner, a target date and a success criterion to every treatment. The success criterion must be testable — 'no Telnet listener on any managed switch, verified by Nmap' is testable; 'switches hardened' is not.
 6. Map every planned control onto the NIST CSF 2.0 functions — Govern, Identify, Protect, Detect, Respond, Recover — and count the controls in each. The thin function is your real gap.
 
-   ```bash
-   https://www.nist.gov/cyberframework
-   ```
+   → <https://www.nist.gov/cyberframework>
 
 7. Fill the thinnest function with at least one concrete control. Most first-draft plans are heavy on Protect and empty on Recover.
 8. Set the monitoring cadence: which risks are reviewed monthly, which quarterly, and what event forces an out-of-cycle review.
@@ -568,25 +594,29 @@ Goal: Security design is a phased engineering activity, not a shopping list. In 
 
 **What you'll produce**
 
-A three-phase security design: a planning-phase requirements table, a segmented target architecture diagram with controls at every layer, and a management-phase operating model.   (Tools: Lab 6 plan, a diagramming tool (draw.io or paper), a generative AI assistant.)
+A three-phase security design: a planning-phase requirements table, a segmented target architecture diagram with controls at every layer, and a management-phase operating model.   (Tools: Lab 6 plan, the IP Calculator (alfredang.github.io/ipcalculator), a diagramming tool (draw.io or paper), a generative AI assistant.)
 
 **Step-by-step**
 
 1. Planning phase — write the security requirements the design must satisfy, each traced back to a specific risk ID from Lab 5. A requirement with no risk behind it is a preference.
 2. Planning phase — record the constraints: budget, existing equipment, skills available, downtime tolerance and any regulatory obligation. Constraints are what make a design real.
 3. Planning phase — define the trust zones: Internet, DMZ, internal user network, server network, management network and any OT or guest segment. State what each zone is allowed to reach.
-4. Building phase — draw the target architecture with the zones as segments and place the controls at each layer: perimeter firewall, DMZ, internal segmentation, host controls and data controls.
-5. Building phase — write the zone-to-zone access matrix. Rows are source zones, columns are destination zones, cells hold the permitted protocols. Default deny: every empty cell is blocked.
-6. Building phase — classify every control you have placed as physical, technical or administrative, and confirm you have all three. A design with no administrative controls has no way to stay correct.
-7. Management phase — define what happens after go-live: who monitors what, the review cadence, the change-control path, and the trigger that forces a redesign.
-8. Ask your AI assistant to review the design as an attacker would.
+4. Planning phase — turn those zones into real address space. Use the IP Calculator's recursive subnet splitting to carve your allocation into one subnet per zone, sized to the hosts each actually needs. Record the CIDR, usable range and host count per zone — a segmentation design with no addressing plan cannot be implemented.
+
+   → <https://alfredang.github.io/ipcalculator/>
+
+5. Building phase — draw the target architecture with the zones as segments and place the controls at each layer: perimeter firewall, DMZ, internal segmentation, host controls and data controls.
+6. Building phase — write the zone-to-zone access matrix. Rows are source zones, columns are destination zones, cells hold the permitted protocols. Default deny: every empty cell is blocked.
+7. Building phase — classify every control you have placed as physical, technical or administrative, and confirm you have all three. A design with no administrative controls has no way to stay correct.
+8. Management phase — define what happens after go-live: who monitors what, the review cadence, the change-control path, and the trigger that forces a redesign.
+9. Ask your AI assistant to review the design as an attacker would.
 
    ```bash
    Prompt: 'Here is a segmented network security design with a zone access matrix. Acting as an attacker, describe three paths you would take through this architecture and name the control that would have to fail at each step. Then identify the weakest zone boundary.'
    ```
 
-9. Answer each attack path in writing: either add a control that closes it, or record why the residual risk is acceptable and who accepts it.
-10. Trace every High and Critical risk from Lab 5 to at least one control in the design. Any risk with no control is either untreated or was accepted — and it must say which.
+10. Answer each attack path in writing: either add a control that closes it, or record why the residual risk is acceptable and who accepts it.
+11. Trace every High and Critical risk from Lab 5 to at least one control in the design. Any risk with no control is either untreated or was accepted — and it must say which.
 
 **Test it — how you know the lab is done**
 
@@ -613,7 +643,7 @@ Goal: This is where the design becomes configuration. You write a default-deny f
 
 **What you'll produce**
 
-A default-deny firewall ruleset derived from the access matrix, a tuned detection ruleset with its true/false positive counts, and an adaptive access-control policy specification.   (Tools: Firewall rule syntax (iptables or a NGFW policy table), Wireshark, Python, a generative AI assistant.)
+A default-deny firewall ruleset derived from the access matrix, a tuned detection ruleset with its true/false positive counts, and an adaptive access-control policy specification.   (Tools: Firewall rule syntax (iptables or a NGFW policy table), the Cryptography Toolkit (alfredang.github.io/cryptography-toolkit), Wireshark, Python, a generative AI assistant.)
 
 **Step-by-step**
 
@@ -634,17 +664,21 @@ iptables -P FORWARD DROP
 
 3. Add explicit deny-and-log rules for the traffic you most want to know about — management protocols crossing a zone boundary, and any outbound connection from the server zone.
 4. Review the ruleset for shadowed rules: any rule that can never match because an earlier rule already covers its traffic. Shadowed rules are the most common firewall defect there is.
-5. Now the detection layer. Write three detection rules against the Lab 2 capture — one for a port scan, one for a large outbound transfer, and one for a connection to a management port from a user subnet.
-6. Run each rule over the capture and count the true positives and false positives. A rule with more false positives than true is worse than no rule, because it trains the analyst to ignore alerts.
+5. Your ruleset controls WHO may connect; encryption controls what an interceptor can read. Use the Cryptography Toolkit to encrypt a sample management credential with AES-256 (CBC), then decrypt it. Then try the same string with DES and RC4 — both are flagged insecure for a reason. Record why your design mandates AES for management traffic.
+
+   → <https://alfredang.github.io/cryptography-toolkit/>
+
+6. Now the detection layer. Write three detection rules against the Lab 2 capture — one for a port scan, one for a large outbound transfer, and one for a connection to a management port from a user subnet.
+7. Run each rule over the capture and count the true positives and false positives. A rule with more false positives than true is worse than no rule, because it trains the analyst to ignore alerts.
 
    ```bash
    tshark -r traffic.pcapng -Y 'tcp.flags.syn==1 && tcp.flags.ack==0' -T fields -e ip.src | sort | uniq -c | sort -rn
    ```
 
-7. Compare the static rule against the Lab 2 anomaly model on the same traffic. Record where the rule wins (precision on known patterns) and where the model wins (unnamed behaviour).
-8. Specify the adaptive access-control policy: the signals (device posture, location, time, behaviour deviation, resource sensitivity), the risk bands, and the action at each band — allow, step-up MFA, restrict, or block.
-9. State the human-in-the-loop boundary explicitly. Which actions may the system take autonomously, and which require a named person to approve? Automatic blocking of a production server needs an owner.
-10. Ask your AI assistant to review the firewall ruleset for shadowed rules, overly broad allows and missing egress controls, then verify each finding by reading the rule yourself.
+8. Compare the static rule against the Lab 2 anomaly model on the same traffic. Record where the rule wins (precision on known patterns) and where the model wins (unnamed behaviour).
+9. Specify the adaptive access-control policy: the signals (device posture, location, time, behaviour deviation, resource sensitivity), the risk bands, and the action at each band — allow, step-up MFA, restrict, or block.
+10. State the human-in-the-loop boundary explicitly. Which actions may the system take autonomously, and which require a named person to approve? Automatic blocking of a production server needs an owner.
+11. Ask your AI assistant to review the firewall ruleset for shadowed rules, overly broad allows and missing egress controls, then verify each finding by reading the rule yourself.
 
    ```bash
    Prompt: 'Review this ordered firewall ruleset. Identify shadowed rules that can never match, allow rules that are broader than their stated business reason, and any missing egress control. Quote the rule number for each finding.'
@@ -698,21 +732,15 @@ model_p = IsolationForest(contamination=0.02, random_state=42).fit(X_poisoned)
 5. Record the degradation as a number — detection rate before poisoning versus after. 'The model got worse' is an anecdote; a measured drop is evidence.
 6. Map both attacks onto the NIST AI 100-2e2025 taxonomy — evasion, poisoning, privacy and misuse — and state which class each belongs to and at what stage of the ML lifecycle it lands.
 
-   ```bash
-   https://csrc.nist.gov/pubs/ai/100/2/e2025/final
-   ```
+   → <https://csrc.nist.gov/pubs/ai/100/2/e2025/final>
 
 7. Look up the matching tactics and techniques in MITRE ATLAS, the adversarial threat knowledge base for AI systems, and note the mitigations it lists.
 
-   ```bash
-   https://atlas.mitre.org/
-   ```
+   → <https://atlas.mitre.org/>
 
 8. Work through the NSA/CISA 'Deploying AI Systems Securely' controls under its three categories — secure the deployment environment, continuously protect the AI system, and secure AI operation and maintenance.
 
-   ```bash
-   https://www.cisa.gov/news-events/alerts/2024/04/15/joint-guidance-deploying-ai-systems-securely
-   ```
+   → <https://www.cisa.gov/news-events/alerts/2024/04/15/joint-guidance-deploying-ai-systems-securely>
 
 9. Add the CISA/NSA AI data-security controls that protect the training pipeline: data provenance tracking, cryptographic integrity verification, digital signatures on dataset revisions, access control by classification, encryption in transit and at rest, and continuous risk assessment.
 10. Produce the hardening checklist for the AI components in your Lab 7 design. Every item names the control, the attack class it addresses, who owns it and how it is verified.
@@ -759,7 +787,7 @@ Goal: Incident response is only as good as the evidence available when it starts
 
 **What you'll produce**
 
-A logging and audit specification, plus a triaged alert queue ranked by priority with an AI-generated rationale for each and your own verification of the top ten.   (Tools: syslog, Windows Event Log, Python, pandas, a generative AI assistant.)
+A logging and audit specification, plus a triaged alert queue ranked by priority with an AI-generated rationale for each and your own verification of the top ten.   (Tools: syslog, Windows Event Log, RegexLab (alfredang.github.io/regexgenerator), Python, pandas, a generative AI assistant.)
 
 **Step-by-step**
 
@@ -778,22 +806,30 @@ A logging and audit specification, plus a triaged alert queue ranked by priority
    python3 triage.py   # provided in labs/lab-10/
    ```
 
-6. Deduplicate: collapse identical alerts on the same source, destination and signature within a time window into one alert with a count. Record how much this alone reduces the queue.
+6. Before filtering at scale, build the pattern and prove it works. Paste a representative log line into RegexLab, write a regex that extracts the source IP and the event type, and check the live match count and the match explanation. A filter you have not tested against real lines is how a triage pipeline silently drops evidence.
+
+   → <https://alfredang.github.io/regexgenerator/>
+
+7. Use the same tool to write a pattern that catches authentication FAILURES but not successes, then deliberately test it against a success line to confirm it does not match. Record both results — the negative test is the one that matters.
+
+   → <https://alfredang.github.io/regexgenerator/>
+
+8. Deduplicate: collapse identical alerts on the same source, destination and signature within a time window into one alert with a count. Record how much this alone reduces the queue.
 
    ```bash
    df.groupby(['src','dst','signature']).agg(count=('ts','size'), first=('ts','min'), last=('ts','max'))
    ```
 
-7. Cluster the remaining alerts by source and by time so that a burst from one host reads as one incident rather than forty unrelated events.
-8. Enrich each cluster with context from your earlier labs — the asset criticality from Lab 4 and the risk score from Lab 5. Context is what turns an alert into a priority.
-9. Ask your AI assistant to rank the clusters and explain each ranking.
+9. Cluster the remaining alerts by source and by time so that a burst from one host reads as one incident rather than forty unrelated events.
+10. Enrich each cluster with context from your earlier labs — the asset criticality from Lab 4 and the risk score from Lab 5. Context is what turns an alert into a priority.
+11. Ask your AI assistant to rank the clusters and explain each ranking.
 
    ```bash
    Prompt: 'Here are deduplicated, enriched security alert clusters with asset criticality. Rank them by investigation priority. For each, state the likely attack technique, the evidence supporting it, and what a responder should check first. Flag any cluster where the evidence is ambiguous.'
    ```
 
-10. Verify the top ten yourself against the raw logs. Count how many were genuinely high priority — that number is your triage precision, and it is what you report.
-11. Write down the two alert types the AI ranked poorly and say what context it was missing. That gap is the enrichment you add next time.
+12. Verify the top ten yourself against the raw logs. Count how many were genuinely high priority — that number is your triage precision, and it is what you report.
+13. Write down the two alert types the AI ranked poorly and say what context it was missing. That gap is the enrichment you add next time.
 
 **Test it — how you know the lab is done**
 
@@ -820,7 +856,7 @@ Goal: An incident that is badly documented is an incident that teaches nothing a
 
 **What you'll produce**
 
-A complete incident record with a reconstructed evidence-based timeline, a justified severity classification, the actions taken, the evidence inventory and the notification decisions.   (Tools: Lab 10 alert queue and raw logs, NIST SP 800-61, an incident record template, a generative AI assistant.)
+A complete incident record with a reconstructed evidence-based timeline, a justified severity classification, the actions taken, the evidence inventory and the notification decisions.   (Tools: Lab 10 alert queue and raw logs, the PCAP Analyzer and Cryptography Toolkit, NIST SP 800-61, an incident record template, a generative AI assistant.)
 
 **Step-by-step**
 
@@ -830,21 +866,29 @@ A complete incident record with a reconstructed evidence-based timeline, a justi
 4. Classify the severity against written criteria: assets affected, data classification involved, business impact and whether the activity is ongoing. State the criteria you applied so the rating can be reviewed.
 5. List the affected assets by name from the Lab 4 register, with their criticality and the data classification each one holds.
 6. Record the response actions taken with a timestamp and the name of the person who took each one. Include the actions that were considered and rejected, and why — a reviewer will ask.
-7. Build the evidence inventory: log extracts, packet captures, screenshots and system images, each with where it is stored, its hash and who has access. This is what makes the record defensible.
+7. If a packet capture is part of your evidence, summarise it before you cite it. Open it in the PCAP Analyzer and record the capture window, the packet and byte counts, and the conversations involving the affected asset — that summary is what a reader who cannot open a pcap actually needs.
+
+   → <https://alfredang.github.io/pcapanalyzer/>
+
+8. Build the evidence inventory: log extracts, packet captures, screenshots and system images, each with where it is stored, its hash and who has access. This is what makes the record defensible.
 
    ```bash
    shasum -a 256 evidence/*.pcapng evidence/*.log > evidence/MANIFEST.sha256
    ```
 
-8. Record the notification decisions — who was informed, when, and which obligations were considered. In Singapore, consider whether the PDPA data-breach notification obligation to the PDPC and affected individuals is engaged, and record the reasoning either way.
-9. Ask your AI assistant to draft the incident narrative from your timeline.
+9. Confirm you understand what that hash proves. Put the same text into the Cryptography Toolkit twice and check the digest is identical, then change one character and check it is completely different. That property — and only that property — is what makes your evidence manifest tamper-evident.
+
+   → <https://alfredang.github.io/cryptography-toolkit/>
+
+10. Record the notification decisions — who was informed, when, and which obligations were considered. In Singapore, consider whether the PDPA data-breach notification obligation to the PDPC and affected individuals is engaged, and record the reasoning either way.
+11. Ask your AI assistant to draft the incident narrative from your timeline.
 
    ```bash
    Prompt: 'Draft a factual incident narrative from this evidence timeline. Use only what the timeline supports. Mark every inference explicitly as an inference. Do not speculate about attribution.'
    ```
 
-10. Check the draft line by line against the timeline. Delete every statement the evidence does not support and every attribution claim. Record what you removed — that edit is the professional skill this lab teaches.
-11. Write the lessons-learned section: what detected it, what delayed the response, and the one control change that would have prevented or caught it earlier. Feed that change back into the Lab 6 plan.
+12. Check the draft line by line against the timeline. Delete every statement the evidence does not support and every attribution claim. Record what you removed — that edit is the professional skill this lab teaches.
+13. Write the lessons-learned section: what detected it, what delayed the response, and the one control change that would have prevented or caught it earlier. Feed that change back into the Lab 6 plan.
 
 **Test it — how you know the lab is done**
 

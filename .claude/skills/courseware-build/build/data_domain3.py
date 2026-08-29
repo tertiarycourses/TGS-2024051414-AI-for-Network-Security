@@ -21,11 +21,13 @@ DOMAIN3 = [
               "and define the management phase that keeps the design honest after go-live. You use an AI assistant "
               "as a design reviewer and then defend the design against its objections."),
         build="A three-phase security design: a planning-phase requirements table, a segmented target architecture diagram with controls at every layer, and a management-phase operating model.",
-        services="Lab 6 plan, a diagramming tool (draw.io or paper), a generative AI assistant",
+        services="Lab 6 plan, the IP Calculator (alfredang.github.io/ipcalculator), a diagramming tool (draw.io or paper), a generative AI assistant",
         steps=[
             ("Planning phase — write the security requirements the design must satisfy, each traced back to a specific risk ID from Lab 5. A requirement with no risk behind it is a preference.", ""),
             ("Planning phase — record the constraints: budget, existing equipment, skills available, downtime tolerance and any regulatory obligation. Constraints are what make a design real.", ""),
             ("Planning phase — define the trust zones: Internet, DMZ, internal user network, server network, management network and any OT or guest segment. State what each zone is allowed to reach.", ""),
+            ("Planning phase — turn those zones into real address space. Use the IP Calculator's recursive subnet splitting to carve your allocation into one subnet per zone, sized to the hosts each actually needs. Record the CIDR, usable range and host count per zone — a segmentation design with no addressing plan cannot be implemented.",
+             "https://alfredang.github.io/ipcalculator/"),
             ("Building phase — draw the target architecture with the zones as segments and place the controls at each layer: perimeter firewall, DMZ, internal segmentation, host controls and data controls.", ""),
             ("Building phase — write the zone-to-zone access matrix. Rows are source zones, columns are destination zones, cells hold the permitted protocols. Default deny: every empty cell is blocked.", ""),
             ("Building phase — classify every control you have placed as physical, technical or administrative, and confirm you have all three. A design with no administrative controls has no way to stay correct.", ""),
@@ -59,7 +61,7 @@ DOMAIN3 = [
               "authentication or block outright. You then compare a static rule against a behavioural model on the "
               "same traffic — and see exactly where each one wins."),
         build="A default-deny firewall ruleset derived from the access matrix, a tuned detection ruleset with its true/false positive counts, and an adaptive access-control policy specification.",
-        services="Firewall rule syntax (iptables or a NGFW policy table), Wireshark, Python, a generative AI assistant",
+        services="Firewall rule syntax (iptables or a NGFW policy table), the Cryptography Toolkit (alfredang.github.io/cryptography-toolkit), Wireshark, Python, a generative AI assistant",
         steps=[
             ("Translate the Lab 7 access matrix into an ordered firewall ruleset. Specific allow rules first, the default deny last — order is the whole game in a firewall.",
              "# Rule 1: allow established return traffic\niptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT\n# Rule N: default deny (must be last)\niptables -P FORWARD DROP"),
@@ -67,6 +69,8 @@ DOMAIN3 = [
              "iptables -A FORWARD -s 10.0.10.0/24 -d 10.0.30.0/24 -p tcp --dport 443 -j ACCEPT -m comment --comment 'Users to app servers HTTPS - REQ-004'"),
             ("Add explicit deny-and-log rules for the traffic you most want to know about — management protocols crossing a zone boundary, and any outbound connection from the server zone.", ""),
             ("Review the ruleset for shadowed rules: any rule that can never match because an earlier rule already covers its traffic. Shadowed rules are the most common firewall defect there is.", ""),
+            ("Your ruleset controls WHO may connect; encryption controls what an interceptor can read. Use the Cryptography Toolkit to encrypt a sample management credential with AES-256 (CBC), then decrypt it. Then try the same string with DES and RC4 — both are flagged insecure for a reason. Record why your design mandates AES for management traffic.",
+             "https://alfredang.github.io/cryptography-toolkit/"),
             ("Now the detection layer. Write three detection rules against the Lab 2 capture — one for a port scan, one for a large outbound transfer, and one for a connection to a management port from a user subnet.", ""),
             ("Run each rule over the capture and count the true positives and false positives. A rule with more false positives than true is worse than no rule, because it trains the analyst to ignore alerts.",
              "tshark -r traffic.pcapng -Y 'tcp.flags.syn==1 && tcp.flags.ack==0' -T fields -e ip.src | sort | uniq -c | sort -rn"),

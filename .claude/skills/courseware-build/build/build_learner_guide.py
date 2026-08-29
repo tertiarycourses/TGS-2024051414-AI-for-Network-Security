@@ -112,6 +112,17 @@ bullets([
  "Never paste real production data, credentials, customer information or unredacted logs into a public AI assistant. Sanitise first — replace real addresses, hostnames and identifiers with lab equivalents.",
  "Always verify what the assistant tells you against an authoritative source. Every lab that uses AI has a verification step for exactly this reason; a confident answer is not a correct answer.",
 ])
+h3("Browser practice tools used in the labs")
+p("Five of the labs use a free browser-based tool — nothing to install, and none of them "
+  "send your data anywhere. Bookmark these before Day 1:")
+bullets([n + " — " + d for n, d in C.BROWSER_TOOLS[:5]])
+p("Two further tools are provided as optional extension work. They teach offensive "
+  "penetration-testing technique, which sits outside the abilities this course assesses, "
+  "so they are not part of any lab and are not examined. Run them if you want to see what "
+  "an attacker learns about a target — that perspective sharpens the defensive judgement "
+  "you are assessed on.")
+bullets([n + " — " + d for n, d in C.BROWSER_TOOLS[5:]])
+
 h3("Authorisation — read this before Lab 1")
 p("Labs 1, 2, 3 and 8 run active scanning and packet capture. Run them only against the lab network "
   "your trainer provides, or against a network you own. If you intend to repeat these labs at work, "
@@ -279,7 +290,9 @@ def render_md():
         elif kind=="steps":
             for i,(instr,cmd) in enumerate(rest[0],1):
                 out.append(f"{i}. {instr}")
-                if cmd: out+=["",f"   ```bash",f"   {cmd}","   ```",""]
+                if cmd and cmd.startswith(("http://","https://")):
+                    out+=["",f"   \u2192 <{cmd}>",""]
+                elif cmd: out+=["",f"   ```bash",f"   {cmd}","   ```",""]
             out.append("")
         elif kind=="code": out+=["```bash",rest[0],"```",""]
         elif kind=="note": out+=[f"> **Note:** {rest[0]}",""]
@@ -305,17 +318,25 @@ prodoc.style_headings(doc)
 prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.VERSION.lstrip("v"),
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,[
+_VCR = [
  ("1.0",C.VERSION_DATE,
   "Initial release of the AI for Network Security Learner Guide — 4 topics aligned to LO1-LO4 and TSC "
   +C.TSC_CODE+", with full step-by-step procedures for all 12 AI-assisted hands-on labs, the K1-K4 / "
   "A1-A9 mapping, assessment preparation for the WA-SAQ and Case Study, and the reference source list.",
   C.TRAINER),
- (C.VERSION.lstrip("v"),C.VERSION_DATE,
+ ("1.1",C.VERSION_DATE,
   "Quality-audit revision — regenerated in step with the v1.1 slide deck and lesson plan so the "
   "lab procedures, slide references and assessment timings stay identical across all artifacts.",
   C.TRAINER),
-])
+ ("1.2",C.VERSION_DATE,
+  "Wired the browser practice tools into the lab procedures. The IP Calculator now scopes the scan in Lab 1 and carves the security zones in Lab 7; the PCAP Analyzer triages the capture in Lab 2 and summarises capture evidence in Lab 11; the Cybersecurity Simulator grounds the likelihood scores in Lab 5; the Cryptography Toolkit demonstrates the confidentiality control in Lab 8 and hash tamper-evidence in Lab 11; RegexLab builds and negatively tests the log filters in Lab 10. Hacklab and FauxBank are documented as optional, unassessed extension work.",C.TRAINER),
+]
+prodoc.add_version_control(doc,_VCR)
+_vcr_versions=[r[0] for r in _VCR]
+assert len(_vcr_versions)==len(set(_vcr_versions)), \
+    f"duplicate rows in the Document Version Control Record: {_vcr_versions}"
+assert _vcr_versions[-1]==C.VERSION.lstrip("v"), \
+    f"version control record ends at {_vcr_versions[-1]}, but the build is {C.VERSION}"
 prodoc.add_toc(doc)
 
 def code_para(text):
@@ -332,9 +353,19 @@ for kind,*rest in B:
     elif kind=="bullets":
         for x in rest[0]: doc.add_paragraph(x,style="List Bullet")
     elif kind=="steps":
+        # Numbering must RESTART at 1 for each lab — a shared List Number style ran
+        # Lab 1 step 1 through to step ~117, so "step 5 of Lab 5" was unfindable.
+        # Literal numbers are used because they survive every renderer.
         for i,(instr,cmd) in enumerate(rest[0],1):
-            para=doc.add_paragraph(style="List Number"); para.add_run(instr)
-            if cmd: code_para(cmd)
+            para=doc.add_paragraph()
+            para.paragraph_format.left_indent=DocxInches(0.32)
+            para.paragraph_format.first_line_indent=DocxInches(-0.32)
+            nr=para.add_run(f"{i}.  "); nr.bold=True
+            para.add_run(instr)
+            if cmd and cmd.startswith(("http://","https://")):
+                lp=doc.add_paragraph(); lr=lp.add_run("\u2192  "+cmd)
+                lr.font.size=Pt(10); lr.font.color.rgb=BRAND
+            elif cmd: code_para(cmd)
     elif kind=="code": code_para(rest[0])
     elif kind=="note":
         para=doc.add_paragraph(); r=para.add_run("Note: "); r.bold=True; r.font.color.rgb=BRAND
